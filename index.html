@@ -220,7 +220,7 @@
             </form>
         </div>
 
-        <div id="resultSection" class="result-section" style="display: none;">
+        <div id="resultSection" class="result-section">
             <p><strong>Nome de Usuário:</strong> <span id="resultUsername"></span></p>
             <p><strong>Curso Aplicado:</strong> Aula de Segurança Operacional (ASO)</p>
             <p><strong>Data e Horário:</strong> <span id="resultDateTime"></span></p>
@@ -231,7 +231,7 @@
             <button class="btn btn-success" onclick="sendDataToGoogleSheets()">Enviar</button>
         </div>
 
-        <div id="editSection" class="result-section" style="display: none;">
+        <div id="editSection" class="result-section">
             <h2>Correção</h2>
             <form id="editForm" onsubmit="updateData(event)">
                 <div class="form-group">
@@ -247,22 +247,21 @@
                     <input type="text" class="form-control" id="editComments" name="editComments" placeholder="Comentários">
                 </div>
                 <button type="submit" class="btn btn-primary">Salvar</button>
+                <button class="btn btn-success" onclick="sendDataToGoogleSheets()">Confirmar Envio</button>
             </form>
         </div>
 
-        <div id="successMessage" class="success-message" style="display: none;">
+        <div id="successMessage" class="success-message">
             <p>Dados enviados com sucesso!</p>
-            <a href="https://docs.google.com/spreadsheets/d/1K1Qg2ZsbfZqfJNtlwWs_QC9wpCpAtXdoyKBUjRYqzxE/edit?gid=1506633114#gid=1506633114" class="btn btn-success">Ver Planilha</a>
+            <a href="https://docs.google.com/spreadsheets/d/1B3dP1kLZnkmie6BL61jEYGgb_d0Fhu_QrMYXnjHAIo8/edit?usp=sharing" class="btn btn-success">Ver Planilha</a>
         </div>
     </div>
 
-    <!-- Bootstrap JS e dependências -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
     <script>
-        // Função para mostrar os dados preenchidos
         function showData(event) {
             event.preventDefault();
             const now = new Date();
@@ -275,27 +274,24 @@
             document.getElementById('resultComments').textContent = document.getElementById('comments').value;
 
             document.getElementById('formSection').style.display = 'none';
-            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('resultSection').classList.add('show');
         }
 
-        // Função para obter o nome de usuário da URL
         function getUsernameFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('username') || 'Usuário';
         }
 
-        // Função para editar os dados
         function editData() {
             document.getElementById('editDateTime').value = document.getElementById('resultDateTime').textContent;
             document.getElementById('editPresentStudents').value = document.getElementById('resultPresentStudents').textContent;
             document.getElementById('editApprovedStudents').value = document.getElementById('resultApprovedStudents').textContent;
             document.getElementById('editComments').value = document.getElementById('resultComments').textContent;
 
-            document.getElementById('resultSection').style.display = 'none';
-            document.getElementById('editSection').style.display = 'block';
+            document.getElementById('resultSection').classList.remove('show');
+            document.getElementById('editSection').classList.add('show');
         }
 
-        // Função para salvar os dados editados
         function updateData(event) {
             event.preventDefault();
 
@@ -304,42 +300,37 @@
             document.getElementById('resultApprovedStudents').textContent = document.getElementById('editApprovedStudents').value;
             document.getElementById('resultComments').textContent = document.getElementById('editComments').value;
 
-            document.getElementById('editSection').style.display = 'none';
-            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('editSection').classList.remove('show');
+            document.getElementById('resultSection').classList.add('show');
         }
 
-        // Função para enviar os dados para o Google Sheets
         function sendDataToGoogleSheets() {
-    const data = {
-        username: document.getElementById('resultUsername').textContent,
-        course: 'Aula de Segurança Operacional (ASO)',
-        dateTime: document.getElementById('resultDateTime').textContent,
-        presentStudents: document.getElementById('resultPresentStudents').textContent,
-        approvedStudents: document.getElementById('resultApprovedStudents').textContent,
-        comments: document.getElementById('resultComments').textContent
-    };
+            const data = {
+                username: document.getElementById('resultUsername').textContent,
+                course: 'Aula de Segurança Operacional (ASO)',
+                dateTime: document.getElementById('resultDateTime').textContent,
+                presentStudents: document.getElementById('resultPresentStudents').textContent,
+                approvedStudents: document.getElementById('resultApprovedStudents').textContent,
+                comments: document.getElementById('resultComments').textContent
+            };
 
-    fetch('https://script.google.com/macros/s/AKfycbw215lQhERebNgSF6Odw10oYwargNkKFKzPrnNBIpdUAp99tp2ACapKky-2bfSfJ7rg/exec', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.result === 'success') {
-            console.log('Success:', data);
-            document.getElementById('resultSection').style.display = 'none';
-            document.getElementById('successMessage').style.display = 'block';
-        } else {
-            console.error('Error:', data.error);
+            fetch('https://script.google.com/macros/s/AKfycbx9fyAAPWefMIuZItnATGRKQlyMZc4KIXVYQIj6FfqrbwaFpf0GIyzJdZyQ69MxOptT/exec', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.result === 'success') {
+                    document.getElementById('resultSection').classList.remove('show');
+                    document.getElementById('successMessage').style.display = 'block';
+                } else {
+                    alert('Erro ao enviar dados: ' + result.error);
+                }
+            })
+            .catch(error => {
+                alert('Erro ao enviar dados: ' + error.message);
+            });
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-}
     </script>
 </body>
 
